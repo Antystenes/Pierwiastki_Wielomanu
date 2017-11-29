@@ -1,0 +1,1 @@
+# Pierwiastki_Wielomanu
