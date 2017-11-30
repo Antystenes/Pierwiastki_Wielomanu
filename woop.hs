@@ -4,20 +4,20 @@ import Data.Ratio
 import Control.Applicative
 import Control.Arrow
 
--- decrypt 1x^4 -1x^3 1x^2 -3x^1 -6x^0 
+-- decrypt 1x^4 -1x^3 1x^2 -3x^1 -6x^0
 
 --solve ::
-solve s = 
+solve s =
     let dcrp    = decrypt s
         targets = getPossibilities (fst . head $ dcrp) (fst . last $ dcrp)
 --        foo a   = foldingFunction a dcrp
 --        zippedV = (,) <$> targets <*> dcrp
 
---        hit     = foldl (\acc x -> (fst $ snd x) * (fst x) ^ (snd $ snd x) + acc) 0 
+--        hit     = foldl (\acc x -> (fst $ snd x) * (fst x) ^ (snd $ snd x) + acc) 0
 --    in  hit <$> zippedV
 --    in (\x y z -> (x,(y,z))) <$> fst <*> (fst . snd) <*> (snd . snd) <$> zippedV
 --    in bar dcrp targets
-    in bar (fmap ((%1) . fst) dcrp) targets
+    in bar dcrp targets
 
 divisors :: Int -> [Int]
 divisors x = [ a | a <- [1..abs(x)], (x `rem` a) == 0]
@@ -46,12 +46,14 @@ getPossibilities p q = nub $ (%) <$> (divisors q) <*> (divisors p)
 
 -- THIS SHIT IS WHY I WANT TO DIE
 
-foo ::[(Int,Int)] -> Ratio Int -> Ratio Int
-foo (ab:abes) x = fst ab * x ^ snd ab + foo abes x
-foo [] _        = 0
+p n = foldr (\x a -> x * a) 1 . replicate n
+
+foo ::[(Ratio Int,Int)] -> Ratio Int -> Ratio Int
+foo l x = foldr (\(a,b) acc -> p b (a * x) + acc) 0 l
+  --fst ab * x ^ snd ab + foo abes x
 
 bar :: [(Int,Int)] -> [Ratio Int] -> [Ratio Int]
-bar abes (x:xs) = foo abes x : bar abes xs
-bar _ []        = []
+--bar abes (x:xs) = foo abes x : bar abes xs
+--bar _ []        = []
 
---bar abes = map (foo abes <<< fromIntegral &&& fromIntegral)
+bar = map . foo . map (first fromIntegral)
