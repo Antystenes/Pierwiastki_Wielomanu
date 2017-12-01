@@ -3,6 +3,7 @@ import Data.Char (isDigit)
 import Data.Ratio
 import Control.Applicative
 import Control.Arrow
+import Debug.Trace
 
 -- decrypt 1x^4 -1x^3 1x^2 -3x^1 -6x^0
 
@@ -20,23 +21,31 @@ solve s =
     in bar dcrp targets
 
 divisors :: Int -> [Int]
-divisors x = [ a | a <- [1..abs(x)], (x `rem` a) == 0]
+divisors x = [ a | a <- filter (/=0) [-x..x], (x `rem` a) == 0]
+-- roots of polynomial may be negative :)
+
 
 decrypt :: String -> [(Int,Int)]
-decrypt s =
-    let worded   = words s
-        brokenUp = fmap (break (=='x')) worded
-        powers   = fmap (dropWhile (not . isDigit)) $ fmap snd brokenUp
-        handled1 = fmap (handleNeg . fst) brokenUp
-        handled2 = fmap handleNeg powers
-        paired   = zip handled1 handled2
-    in  paired
+decrypt =
+  words >>>
+  fmap (break (=='x')) >>>
+  fmap (handleNeg . fst) &&& fmap (handleNeg.dropWhile (not . isDigit).snd) >>>
+  uncurry zip
+
+--    let worded   = traceShowId $ words s
+--        brokenUp = traceShowId $ fmap (break (=='x')) worded
+--        powers   = traceShowId $ fmap (dropWhile (not . isDigit)) $ fmap snd brokenUp
+--        handled1 = traceShowId $ fmap (handleNeg . fst) brokenUp
+--        handled2 = traceShowId $ fmap handleNeg powers
+--        paired   = traceShowId $ zip handled1 handled2
+--    in  paired
 
 handleNeg :: String -> Int
 handleNeg a@(x:xs)
         | x == '-'  = (negate . read) xs
         | x == '+'  = read xs
         | otherwise = read a
+
 
 getPossibilities :: Int -> Int -> [Ratio Int]
 getPossibilities p q = nub $ (%) <$> (divisors q) <*> (divisors p)
@@ -46,7 +55,7 @@ getPossibilities p q = nub $ (%) <$> (divisors q) <*> (divisors p)
 
 -- THIS SHIT IS WHY I WANT TO DIE
 
-p n = foldr (\x a -> x * a) 1 . replicate n
+p = (foldr (\x a -> x * a) 1 .) . replicate
 
 foo ::[(Ratio Int,Int)] -> Ratio Int -> Ratio Int
 foo l x = foldr (\(a,b) acc -> p b (a * x) + acc) 0 l
