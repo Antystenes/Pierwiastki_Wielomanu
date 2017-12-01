@@ -3,7 +3,6 @@ import Data.Char (isDigit)
 import Data.Ratio
 import Control.Applicative
 import Control.Arrow
-import Debug.Trace
 
 -- decrypt 1x^4 -1x^3 1x^2 -3x^1 -6x^0
 
